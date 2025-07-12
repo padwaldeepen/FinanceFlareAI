@@ -1,45 +1,61 @@
 # FinanceFlareAI
 
-**FinanceFlareAI** is an AI-powered personal budget tracker designed to help users effortlessly manage their income, expenses, and savings. Using advanced AI, it automatically categorizes expenses, provides spending insights, and offers personalized budgeting advice.
-
----
+AI-powered personal budget tracker with automatic expense categorization and spending insights.
 
 ## Features
 
-- User authentication with secure login/signup
-- Add income and expenses via intuitive forms or natural language
-- AI-powered automatic expense categorization
-- Interactive dashboard with spending charts and trends
-- Personalized budget tips and alerts
-- Responsive design built with React and Tailwind CSS
-- Backend API built with Node.js and PostgreSQL
-- Deployed on Vercel (frontend) and Railway (backend)
-
----
+- 🔐 JWT authentication
+- 💰 Transaction management (income/expenses)
+- 🤖 AI-powered categorization using OpenAI
+- 📊 Interactive dashboard with charts
+- 🌙 Dark/light mode
+- 📱 Responsive design
 
 ## Tech Stack
 
-- **Frontend:** React, Vite, Tailwind CSS, TypeScript
-- **Backend:** Node.js, Express
-- **Database:** PostgreSQL
-- **AI Integration:** OpenAI GPT API for NLP & insights
-- **Authentication:** Supabase or Firebase Auth
-- **Deployment:** Vercel (frontend), Railway (backend)
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Recharts
+- **Backend**: FastAPI, SQLAlchemy, PostgreSQL, JWT
+- **AI**: OpenAI GPT for transaction categorization
 
----
+## Quick Start
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v16+)
-- PostgreSQL database
-- OpenAI API key
-- Supabase or Firebase account (for auth)
-
-### Installation
-
-1. Clone the repo:
+1. **Clone and setup**
    ```bash
-   git clone https://github.com/yourusername/financeflareai.git
-   cd financeflareai
+   git clone <repository-url>
+   cd FinanceFlareAI
+   cp env.example .env
+   # Add your OpenAI API key to .env
+   ```
+
+2. **Start with Docker**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+3. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
+
+## Environment Variables
+
+Create `.env` file with:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+SECRET_KEY=your_secret_key_here
+DATABASE_URL=postgresql://financeflareai_user:financeflareai_password@postgres:5432/financeflareai
+```
+
+## Development
+
+```bash
+# Frontend
+cd frontend
+npm install
+npm run dev
+
+# Backend
+cd backend
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```

@@ -1,0 +1,105 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: financeflareai-postgres
+    environment:
+      POSTGRES_DB: financeflareai
+      POSTGRES_USER: financeflareai_user
+      POSTGRES_PASSWORD: financeflareai_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U financeflareai_user -d financeflareai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - financeflareai-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: financeflareai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - financeflareai-network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: financeflareai-backend
+    environment:
+      - DATABASE_URL=postgresql://financeflareai_user:financeflareai_password@postgres:5432/financeflareai
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=your-super-secret-key-here-change-this-in-production
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ALLOWED_ORIGINS=["http://localhost:3000","http://localhost:80","http://frontend:80"]
+      - ALLOWED_HOSTS=["*"]
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DEBUG=false
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - financeflareai-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: financeflareai-frontend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_APP_NAME=FinanceFlareAI
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - financeflareai-network
+    restart: unless-stopped
+
+
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  financeflareai-network:
+    driver: bridge 
